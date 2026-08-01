@@ -22,8 +22,8 @@ if st.button("START MEETING"):
     if user_input:
         with st.spinner("এআই প্যানেল আলোচনা করছে..."):
             try:
-                # AI 1: Gemini (Draft Creator) - মডেলের নাম আপডেট করা হলো
-                model_1 = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
+                # সঠিক এবং স্ট্যান্ডার্ড মডেল নেম ব্যবহার করা হলো
+                model_1 = genai.GenerativeModel('gemini-1.5-flash', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
                 response_1 = model_1.generate_content(user_input)
                 
                 st.subheader("🤖 AI - 1 (Gemini Draft):")
