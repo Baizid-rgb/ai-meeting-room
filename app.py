@@ -1,41 +1,57 @@
 import streamlit as st
 import google.generativeai as genai
+from groq import Groq
 import os
 
-# Streamlit Page Setup
 st.set_page_config(page_title="AI Conference Room", layout="centered")
 
 st.markdown("# 🧠 AI Conference Room (Multi-AI Panel)")
-st.markdown("এখানে এআইগুলো নিজেদের মধ্যে ক্রস-চেক করে তোমাকে বেস্ট আউটপুট দেবে।")
+st.markdown("এখানে জেমিনাই এবং গ্রক একসাথে কাজ করে তোমাকে সেরা আউটপুট দেবে।")
 
-# API Configuration (Streamlit Secrets থেকে এপিআই কী নেবে)
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+# API Keys Check from Streamlit Secrets
+gemini_key = st.secrets.get("GEMINI_API_KEY")
+groq_key = st.secrets.get("GROQ_API_KEY")
+
+if gemini_key:
+    genai.configure(api_key=gemini_key)
 else:
-    st.error("API Key পাওয়া যায়নি! Streamlit Secrets-এ GEMINI_API_KEY যুক্ত করো।")
+    st.error("GEMINI_API_KEY পাওয়া যায়নি!")
 
-# User Input
-user_input = st.text_area("আলোচনার বিষয় বা প্রম্পট দাও:", placeholder="যেমন: পাইথনের একটি লুপ কোড লেখো বা সেনরো চ্যানেলের আইডিয়া দাও...")
+user_input = st.text_area("আলোচনার বিষয় বা প্রম্পট দাও:", placeholder="যেমন: সেনরো চ্যানেলের জন্য ভিডিওর স্ক্রিপ্ট বা আইডিয়া...")
 
 if st.button("START MEETING"):
     if user_input:
         with st.spinner("এআই প্যানেল আলোচনা করছে..."):
             try:
-                # AI Model 1: Draft Creator (যেমন জেমিনাই ফ্ল্যাশ)
-                model_1 = genai.GenerativeModel('gemini-1.5-flash', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কোড তৈরি করছ।")
+                # AI 1: Gemini (Draft Creator)
+                model_1 = genai.GenerativeModel('gemini-1.5-flash', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
                 response_1 = model_1.generate_content(user_input)
                 
-                st.subheader("🤖 AI - 1 (Draft / Code):")
+                st.subheader("🤖 AI - 1 (Gemini Draft):")
                 st.write(response_1.text)
                 
-                # AI Model 2: Critic & Fixer (রিভিউ এবং বাগ ফিক্সার)
-                model_2 = genai.GenerativeModel('gemini-1.5-flash', system_instruction="তুমি ক্রিতিক এবং রিভিউয়ার। আগের এআই-এর দেওয়া কোড বা উত্তরে কোনো ভুল বা বাগ থাকলে তা ধরিয়ে দাও এবং ফাইনাল অপ্টিমাইজড ভার্সন দাও।")
-                response_2 = model_2.generate_content(f"আগের আউটপুটটি যাচাই করো এবং ভুল সংশোধন করে বেস্ট রেজাল্ট দাও: {response_1.text}")
-                
-                st.subheader("⚡ AI - 2 (Critique & Final Optimized Result):")
-                st.write(response_2.text)
+                # AI 2: Groq (Llama Model - Critic & Fixer)
+                if groq_key:
+                    client = Groq(api_key=groq_key)
+                    chat_completion = client.chat.completions.create(
+                        messages=[
+                            {
+                                "role": "system",
+                                "content": "তুমি ক্রিতিক এবং রিভিউয়ার। আগের এআই-এর দেওয়া কন্টেন্টে কোনো ভুল বা দুর্বলতা থাকলে তা শুধরে ফাইনাল অপ্টিমাইজড ভার্সন দাও।"
+                            },
+                            {
+                                "role": "user",
+                                "content": f"মূল প্রম্পট: {user_input}\n\nপ্রথম এআই এর আউটপুট: {response_1.text}"
+                            }
+                        ],
+                        model="llama-3.3-70b-versatile",
+                    )
+                    st.subheader("⚡ AI - 2 (Groq Llama - Final Optimized Result):")
+                    st.write(chat_completion.choices[0].message.content)
+                else:
+                    st.warning("GROQ_API_KEY যোগ করা হয়নি, তাই দ্বিতীয় এআই কাজ করছে না।")
                 
             except Exception as e:
                 st.error(f"এরর এসেছে: {e}")
     else:
-        st.warning("আগে কিছু একটা লিখে ইনপুট দাও!")
+        st.warning("আগে কিছু লিখে ইনপুট দাও!")
