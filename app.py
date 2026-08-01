@@ -1,7 +1,6 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 from groq import Groq
-import os
 
 st.set_page_config(page_title="AI Conference Room", layout="centered")
 
@@ -11,28 +10,28 @@ st.markdown("এখানে জেমিনাই এবং গ্রক এক
 gemini_key = st.secrets.get("GEMINI_API_KEY")
 groq_key = st.secrets.get("GROQ_API_KEY")
 
-if gemini_key:
-    genai.configure(api_key=gemini_key)
-else:
-    st.error("GEMINI_API_KEY পাওয়া যায়নি!")
-
 user_input = st.text_area("আলোচনার বিষয় বা প্রম্পট দাও:", placeholder="যেমন: সেনরো চ্যানেলের জন্য ভিডিওর স্ক্রিপ্ট বা আইডিয়া...")
 
 if st.button("START MEETING"):
     if user_input:
         with st.spinner("এআই প্যানেল আলোচনা করছে..."):
             try:
-                # সঠিক ফরম্যাটে জেমিনাই মডেল কল করা হলো
-                model_1 = genai.GenerativeModel('models/gemini-1.5-flash', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
-                response_1 = model_1.generate_content(user_input)
-                
-                st.subheader("🤖 AI - 1 (Gemini Draft):")
-                st.write(response_1.text)
+                # AI 1: Gemini (Draft Creator) - লেটেস্ট জেমিনাই মডেল ব্যবহার করা হয়েছে
+                if gemini_key:
+                    client_gemini = genai.Client(api_key=gemini_key)
+                    response_1 = client_gemini.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=user_input,
+                    )
+                    st.subheader("🤖 AI - 1 (Gemini Draft):")
+                    st.write(response_1.text)
+                else:
+                    st.error("GEMINI_API_KEY পাওয়া যায়নি!")
                 
                 # AI 2: Groq (Llama Model - Critic & Fixer)
-                if groq_key:
-                    client = Groq(api_key=groq_key)
-                    chat_completion = client.chat.completions.create(
+                if groq_key and gemini_key:
+                    client_groq = Groq(api_key=groq_key)
+                    chat_completion = client_groq.chat.completions.create(
                         messages=[
                             {
                                 "role": "system",
