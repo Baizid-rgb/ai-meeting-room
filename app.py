@@ -8,7 +8,6 @@ st.set_page_config(page_title="AI Conference Room", layout="centered")
 st.markdown("# 🧠 AI Conference Room (Multi-AI Panel)")
 st.markdown("এখানে জেমিনাই এবং গ্রক একসাথে কাজ করে তোমাকে সেরা আউটপুট দেবে।")
 
-# API Keys Check from Streamlit Secrets
 gemini_key = st.secrets.get("GEMINI_API_KEY")
 groq_key = st.secrets.get("GROQ_API_KEY")
 
@@ -23,8 +22,8 @@ if st.button("START MEETING"):
     if user_input:
         with st.spinner("এআই প্যানেল আলোচনা করছে..."):
             try:
-                # AI 1: Gemini (Draft Creator)
-                model_1 = genai.GenerativeModel('gemini-1.5-flash', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
+                # AI 1: Gemini (Draft Creator) - মডেলের নাম আপডেট করা হলো
+                model_1 = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction="তুমি ড্রাফট ক্রিয়েটর। প্রাথমিক সমাধান বা কনটেন্ট তৈরি করছ।")
                 response_1 = model_1.generate_content(user_input)
                 
                 st.subheader("🤖 AI - 1 (Gemini Draft):")
