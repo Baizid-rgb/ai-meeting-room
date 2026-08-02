@@ -6,7 +6,7 @@ from openai import OpenAI
 st.set_page_config(page_title="AI Conference Room", layout="centered")
 
 st.markdown("# 🧠 AI Conference Room (Multi-AI Panel)")
-st.markdown("এখানে জেমিনাই, গ্রক এবং ডিপসিক একসাথে কাজ করে তোমাকে সেরা আউটপুট দেবে।")
+st.markdown("এখানে এআই প্যানেল কাজ করছে।")
 
 gemini_key = st.secrets.get("GEMINI_API_KEY")
 groq_key = st.secrets.get("GROQ_API_KEY")
@@ -18,17 +18,18 @@ if st.button("START MEETING"):
     if user_input:
         with st.spinner("এআই প্যানেল আলোচনা করছে..."):
             try:
-                # 1. Gemini (লেটেস্ট gemini-2.0-flash মডেল ব্যবহার করা হয়েছে)
+                # 1. Gemini (কোটা শেষ হলে এটি এড়াতে ট্রাই-কচ ব্যবহার করা হয়েছে)
                 if gemini_key:
-                    client_gemini = genai.Client(api_key=gemini_key)
-                    response_1 = client_gemini.models.generate_content(
-                        model='gemini-2.0-flash',
-                        contents=user_input,
-                    )
-                    st.subheader("🤖 Gemini Draft:")
-                    st.write(response_1.text)
-                else:
-                    st.error("GEMINI_API_KEY পাওয়া যায়নি!")
+                    try:
+                        client_gemini = genai.Client(api_key=gemini_key)
+                        response_1 = client_gemini.models.generate_content(
+                            model='gemini-2.0-flash',
+                            contents=user_input,
+                        )
+                        st.subheader("🤖 Gemini Draft:")
+                        st.write(response_1.text)
+                    except Exception as g_err:
+                        st.warning(f"Gemini Quota Exceeded: কোটা শেষ বা লিমি트 পার হয়েছে। অন্য এআই কাজ করছে...")
                 
                 # 2. Groq (Llama Model)
                 if groq_key:
@@ -42,10 +43,10 @@ if st.button("START MEETING"):
                 else:
                     st.warning("GROQ_API_KEY পাওয়া যায়নি।")
 
-                # 3. DeepSeek
+                # 3. DeepSeek (টাইপো ঠিক করা হয়েছে)
                 if deepseek_key:
                     client_ds = OpenAI(api_key=deepseek_key, base_url="https://api.deepseek.com")
-                    chat_ds = client_ds.client_ds.chat.completions.create(
+                    chat_ds = client_ds.chat.completions.create(
                         model="deepseek-chat",
                         messages=[{"role": "user", "content": user_input}],
                     )
