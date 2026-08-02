@@ -4,7 +4,7 @@ from groq import Groq
 st.set_page_config(page_title="AI Conference Room", layout="centered")
 
 st.markdown("# 🧠 AI Conference Room (Multi-AI Team)")
-st.markdown("এখানে গ্রকের তিনটি ভিন্ন শক্তিশালী এআই টিম একসাথে কাজ করছে।")
+st.markdown("এখানে গ্রকের শক্তিশালী এআই টিম একসাথে কাজ করছে।")
 
 groq_key = st.secrets.get("GROQ_API_KEY")
 
@@ -28,15 +28,15 @@ if st.button("START MEETING"):
                     st.subheader("🤖 AI - 1 (Llama 3.3 Draft):")
                     st.write(res_1.choices[0].message.content)
                     
-                    # 2. Mixtral (লজিক এবং গভীরতা যাচাই করবে)
+                    # 2. Llama 3.1 8B (দ্রুতগতির বিশ্লেষণ ও লজিক যোগ করবে)
                     res_2 = client.chat.completions.create(
                         messages=[
                             {"role": "system", "content": "তুমি লজিক অ্যানালিস্ট। প্রথম এআই-এর কন্টেন্ট বিশ্লেষণ করে আরও গভীরে তথ্য এবং বাস্তবসম্মত পয়েন্ট যোগ করো।"},
                             {"role": "user", "content": f"মূল প্রম্পট: {user_input}\n\nপ্রথম এআই এর আউটপুট: {res_1.choices[0].message.content}"}
                         ],
-                        model="mixtral-8x7b-32768",
+                        model="llama-3.1-8b-instant",
                     )
-                    st.subheader("⚡ AI - 2 (Mixtral Deep Analysis):")
+                    st.subheader("⚡ AI - 2 (Llama 3.1 Analysis):")
                     st.write(res_2.choices[0].message.content)
 
                     # 3. Gemma 2 (ফাইনাল রিভিউ ও অপ্টিমাইজড রূপ দেবে)
